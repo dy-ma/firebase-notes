@@ -12,6 +12,11 @@ body {
     background: white;
 }
 
+textarea {
+    border: 1px solid var(--bs-gray-dark);
+    border-radius: 8px;
+}
+
 .auth {
     width: 20ch;
 }
