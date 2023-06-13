@@ -1,7 +1,5 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
-// TODO: Add SDKs for Firebase products that you want to use
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js'
 import { getFirestore, setDoc, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js'
 
@@ -17,9 +15,11 @@ const firebaseConfig = {
     measurementId: "G-9DVY3WPWY3",
 };
 
+// Macro settings
+const MAX_NOTE_CHARS = 10000;
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const db = getFirestore(app);
@@ -29,20 +29,24 @@ const greeting = document.getElementById("greeting");
 const signInBtn = document.getElementById("signIn");
 const signOutBtn = document.getElementById("signOut");
 const note = document.getElementById("note");
+const spinner = document.getElementById("spinner")
+
+const signIn = (user) => {
+    if (user.displayName) {
+        greeting.innerText = "Hello " + user.displayName;
+        note.readOnly = false;
+    } else
+        greeting.innerText = "Hello " + user.email;
+    // set buttons
+    signInBtn.hidden = true
+    signOutBtn.hidden = false;
+}
 
 // Handle authentication
 signInBtn.onclick = () => {
     signInWithPopup(auth, provider)
-        .then(result => {
-            if (result.user.displayName) {
-                greeting.innerText = "Hello " + result.user.displayName;
-                note.readOnly = false;
-            } else
-                greeting.innerText = "Hello " + result.user.email;
-            // set buttons
-            signInBtn.hidden = true
-            signOutBtn.hidden = false;
-        }).catch(error => {
+        .then(result => signIn(result.user))
+        .catch(error => {
             alert("Error signing in", error);
         })
 }
@@ -63,14 +67,13 @@ signOutBtn.onclick = () => {
 let unsubscribe;
 let timerId;
 let key = 'note1';
-
-const spinner = document.getElementById("spinner")
 onAuthStateChanged(auth, user => {
     if (user) { // is signed in
         // set greeting
-        greeting.innerText = "Hello " + user.displayName;
+        signIn(user);
         // write
         const saveNote = () => {
+            if (note.value.length > MAX_NOTE_CHARS) return;
             setDoc(doc(db, "things", user.uid), {
                 [key]: note.value
             }, { merge: true })
@@ -94,7 +97,7 @@ onAuthStateChanged(auth, user => {
                 note.readOnly = false;
                 // query
                 unsubscribe = onSnapshot(doc(db, "things", user.uid), doc => {
-                    if (doc.data() && doc.data()[key]){
+                    if (doc.data() && doc.data()[key]) {
                         note.value = doc.data()[key];
                     }
                     else
