@@ -1,7 +1,11 @@
+:root {
+    box-sizing: border-box;
+}
+
 body {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: start;
     align-items: center;
     height: 100vh;
     width: 100vw;
@@ -14,11 +18,42 @@ body {
 #button-container {
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: end;
     width: 80%;
+    margin-top: 10vh;
+    margin-bottom: 10vh;
 }
 
 #note {
     width: 80vw;
     margin-top: 1rem;
+}
+
+#radio-star {
+    display: flex;
+    flex-direction: row;
+    width: 80%;
+    justify-content: space-evenly;
+    margin-top: 1rem;
+}
+
+.note-btn {
+    scale: 1.5;
+}
+
+.status {
+    position: relative;
+    transform: translate(0%, -120%);
+    display: flex;
+    justify-content: end;
+    width: 98%;
+}
+
+#checkmark {
+    width: 3rem;
+}
+
+#spinner {
+    margin-bottom: 2%;
+    margin-right: 2%;
 }

@@ -33,35 +33,38 @@ const note = document.getElementById("note");
 // Handle authentication
 signInBtn.onclick = () => {
     signInWithPopup(auth, provider)
-    .then(result => {
-        if (result.user.displayName)
-            greeting.innerText = "Hello " + result.user.displayName;
-        else
-            greeting.innerText = "Hello " + result.user.email;
-        // set buttons
-        signInBtn.hidden = true
-        signOutBtn.hidden = false;
-    }).catch(error => {
-        alert("Error signing in", error);
-    })
+        .then(result => {
+            if (result.user.displayName) {
+                greeting.innerText = "Hello " + result.user.displayName;
+                note.readOnly = false;
+            } else
+                greeting.innerText = "Hello " + result.user.email;
+            // set buttons
+            signInBtn.hidden = true
+            signOutBtn.hidden = false;
+        }).catch(error => {
+            alert("Error signing in", error);
+        })
 }
 
 signOutBtn.onclick = () => {
     signOut(auth)
-    .then(() => {
-        greeting.innerText = "Hello";
-        note.value = "";
-        signInBtn.hidden = false;
-        signOutBtn.hidden = true;
-    }).catch(error => {
-        alert("Error signing out");
-    })
+        .then(() => {
+            greeting.innerText = "Hello";
+            note.value = "";
+            signInBtn.hidden = false;
+            signOutBtn.hidden = true;
+        }).catch(error => {
+            alert("Error signing out");
+        })
 }
 
 // Handle database reads and writes
 let unsubscribe;
 let timerId;
-let key = 'note';
+let key = 'note1';
+
+const spinner = document.getElementById("spinner")
 onAuthStateChanged(auth, user => {
     if (user) { // is signed in
         // set greeting
@@ -70,17 +73,34 @@ onAuthStateChanged(auth, user => {
         const saveNote = () => {
             setDoc(doc(db, "things", user.uid), {
                 [key]: note.value
-            }, {merge: true})
+            }, { merge: true })
+            spinner.hidden = true;
         }
         // save when user hasn't made a change in 2 seconds
         note.oninput = () => {
+            spinner.hidden = false;
             clearTimeout(timerId); // reset whenever user makes change
             timerId = setTimeout(saveNote, 2000);
         }
-        // query
-        unsubscribe = onSnapshot(doc(db, "things", user.uid), doc => {
-            if (doc.data())
-                note.value = doc.data().note;
+        // Configure note selector
+        let noteSelectors = document.querySelectorAll("input[type='radio'][name='selected-note']");
+        noteSelectors.forEach(radio => {
+            radio.addEventListener('change', event => {
+                // unsubscribe from previous note if any
+                unsubscribe && unsubscribe();
+                // set key to selected note id
+                key = event.target.id;
+                // make note writeable
+                note.readOnly = false;
+                // query
+                unsubscribe = onSnapshot(doc(db, "things", user.uid), doc => {
+                    if (doc.data() && doc.data()[key]){
+                        note.value = doc.data()[key];
+                    }
+                    else
+                        note.value = "";
+                })
+            })
         })
     } else {
         note.onchange = "";
