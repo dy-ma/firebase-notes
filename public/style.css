@@ -1,0 +1,24 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+.auth {
+    width: 20ch;
+}
+
+#button-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 80%;
+}
+
+#note {
+    width: 80vw;
+    margin-top: 1rem;
+}
