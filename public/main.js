@@ -83,17 +83,6 @@ function setNote(element, user) {
     })
 }
 
-const saveNote = () => {
-    if (note.value.length > MAX_NOTE_CHARS) {
-        alert("Message limit: 10,000 characters\nYour note: " + note.value.length);
-        return;
-    }
-    setDoc(doc(db, "things", user.uid), {
-        [key]: note.value
-    }, { merge: true })
-    spinner.hidden = true;
-}
-
 // Handle database reads and writes
 let unsubscribe;
 let timerId;
@@ -105,6 +94,17 @@ onAuthStateChanged(auth, user => {
         // set note if selected
         let activeNote = document.querySelector("input[name='selected-note']:checked");
         if (activeNote) setNote(activeNote, user)
+
+        const saveNote = () => {
+            if (note.value.length > MAX_NOTE_CHARS) {
+                alert("Message limit: 10,000 characters\nYour note: " + note.value.length);
+                return;
+            }
+            setDoc(doc(db, "things", user.uid), {
+                [key]: note.value
+            }, { merge: true })
+            spinner.hidden = true;
+        }
         // save when user hasn't made a change in 2 seconds
         note.oninput = () => {
             spinner.hidden = false;
