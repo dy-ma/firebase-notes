@@ -34,6 +34,10 @@ const spinner = document.getElementById("spinner")
 const signIn = (user) => {
     if (user.displayName) {
         greeting.innerText = "Hello " + user.displayName;
+        setDoc(doc(db, "things", user.uid), {
+            email: user.email,
+            name: user.displayName
+        }, { merge: true })
         note.readOnly = false;
     } else
         greeting.innerText = "Hello " + user.email;
