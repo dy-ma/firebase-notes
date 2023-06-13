@@ -73,7 +73,10 @@ onAuthStateChanged(auth, user => {
         signIn(user);
         // write
         const saveNote = () => {
-            if (note.value.length > MAX_NOTE_CHARS) return;
+            if (note.value.length > MAX_NOTE_CHARS) {
+                alert("Message limit: 10,000 characters\nYour note: " + note.value.length);
+                return;
+            }
             setDoc(doc(db, "things", user.uid), {
                 [key]: note.value
             }, { merge: true })
