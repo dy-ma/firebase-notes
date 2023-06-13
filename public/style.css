@@ -19,6 +19,13 @@ textarea {
 
 .auth {
     width: 20ch;
+    scale: 1;
+    transition: scale 0.1s ease;
+}
+
+.auth:hover {
+    scale: 1.1;
+    transition: scale 0.1s ease;
 }
 
 #button-container {
@@ -45,6 +52,23 @@ textarea {
 
 .note-btn {
     scale: 1.5;
+    transition: scale 0.1s ease;
+}
+
+.note-btn:hover {
+    scale: 1.7;
+    transition: scale 0.1s ease;
+}
+
+
+#themeSwitcher {
+    scale: 1;
+    transition: scale 0.1s ease;
+}
+
+#themeSwitcher:hover {
+    scale: 1.2;
+    transition: scale 0.1s ease;
 }
 
 .status {
