@@ -9,6 +9,7 @@ body {
     align-items: center;
     height: 100vh;
     width: 100vw;
+    background: white;
 }
 
 .auth {
@@ -18,7 +19,7 @@ body {
 #button-container {
     display: flex;
     flex-direction: row;
-    justify-content: end;
+    justify-content: space-between;
     width: 80%;
     margin-top: 10vh;
     margin-bottom: 10vh;

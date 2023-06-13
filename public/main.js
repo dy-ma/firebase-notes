@@ -1,3 +1,5 @@
+'use strict'
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js'
@@ -67,6 +69,31 @@ signOutBtn.onclick = () => {
         })
 }
 
+function setNote(element, user) {
+    // unsubscribe from any active firestore queries
+    unsubscribe && unsubscribe();
+    key = element.id;
+    note.readOnly = false;
+    unsubscribe = onSnapshot(doc(db, "things", user.uid), doc => {
+        if (doc.data() && doc.data()[key]) {
+            note.value = doc.data()[key];
+        } else {
+            note.value = "";
+        }
+    })
+}
+
+const saveNote = () => {
+    if (note.value.length > MAX_NOTE_CHARS) {
+        alert("Message limit: 10,000 characters\nYour note: " + note.value.length);
+        return;
+    }
+    setDoc(doc(db, "things", user.uid), {
+        [key]: note.value
+    }, { merge: true })
+    spinner.hidden = true;
+}
+
 // Handle database reads and writes
 let unsubscribe;
 let timerId;
@@ -75,17 +102,9 @@ onAuthStateChanged(auth, user => {
     if (user) { // is signed in
         // set greeting
         signIn(user);
-        // write
-        const saveNote = () => {
-            if (note.value.length > MAX_NOTE_CHARS) {
-                alert("Message limit: 10,000 characters\nYour note: " + note.value.length);
-                return;
-            }
-            setDoc(doc(db, "things", user.uid), {
-                [key]: note.value
-            }, { merge: true })
-            spinner.hidden = true;
-        }
+        // set note if selected
+        let activeNote = document.querySelector("input[name='selected-note']:checked");
+        if (activeNote) setNote(activeNote, user)
         // save when user hasn't made a change in 2 seconds
         note.oninput = () => {
             spinner.hidden = false;
@@ -95,22 +114,7 @@ onAuthStateChanged(auth, user => {
         // Configure note selector
         let noteSelectors = document.querySelectorAll("input[type='radio'][name='selected-note']");
         noteSelectors.forEach(radio => {
-            radio.addEventListener('change', event => {
-                // unsubscribe from previous note if any
-                unsubscribe && unsubscribe();
-                // set key to selected note id
-                key = event.target.id;
-                // make note writeable
-                note.readOnly = false;
-                // query
-                unsubscribe = onSnapshot(doc(db, "things", user.uid), doc => {
-                    if (doc.data() && doc.data()[key]) {
-                        note.value = doc.data()[key];
-                    }
-                    else
-                        note.value = "";
-                })
-            })
+            radio.addEventListener('change', event => setNote(event.target, user))
         })
     } else {
         note.onchange = "";
@@ -118,3 +122,42 @@ onAuthStateChanged(auth, user => {
         unsubscribe && unsubscribe();
     }
 })
+
+// Control dark mode
+function handleTheme() {
+    const getStoredTheme = () => localStorage.getItem('theme');
+    const setStoredTheme = theme => localStorage.setItem('theme', theme);
+
+    const getPreferredTheme = () => {
+        const storedTheme = getStoredTheme();
+        if (storedTheme) return storedTheme;
+        
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
+
+    const themeSwitcher = document.getElementById('themeSwitcher')
+
+    const setTheme = theme => {
+        if (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-bs-theme', 'dark')
+        } else {
+            document.documentElement.setAttribute('data-bs-theme', theme)
+        }
+    }
+
+    // handle stored or prefferred theme
+    setTheme(getPreferredTheme())
+
+    themeSwitcher.onchange = (event) => {
+        if (event.target.checked) {
+            setTheme('dark')
+            setStoredTheme('dark')
+        }
+        else {
+            setTheme('light')
+            setStoredTheme('light')
+        }
+    }
+}
+
+handleTheme();
